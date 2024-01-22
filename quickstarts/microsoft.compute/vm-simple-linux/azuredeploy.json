@@ -11,7 +11,7 @@
   "parameters": {
     "vmName": {
       "type": "string",
-      "defaultValue": "simpleLinuxVM",
+      "defaultValue": "simpleLinux_VM",
       "metadata": {
         "description": "The name of you Virtual Machine."
       }
@@ -48,7 +48,7 @@
     },
     "ubuntuOSVersion": {
       "type": "string",
-      "defaultValue": "Ubuntu-2004",
+      "defaultValue": "Ubuntu-1804",
       "allowedValues": [
         "Ubuntu-1804",
         "Ubuntu-2004",
