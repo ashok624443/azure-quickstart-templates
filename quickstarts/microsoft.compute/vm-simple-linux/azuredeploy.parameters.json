@@ -3,13 +3,13 @@
   "contentVersion": "1.0.0.0",
   "parameters": {
     "adminUsername": {
-      "value": "$(adminUsername)"
+      "value": $(adminUsername)
     },
     "adminPasswordOrKey": {
-      "value": "$(adminPasswordOrKey)"
+      "value": $(adminPasswordOrKey)
     },
     "dnsLabelPrefix": {
-      "value": "$(dnsLabelPrefix)"
+      "value": $(dnsLabelPrefix)
     }
   }
 }
