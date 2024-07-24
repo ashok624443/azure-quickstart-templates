@@ -32,7 +32,7 @@ This template will log API traffic from Azure API Management using [Moesif API A
 
 ## How it works
 
-This solution is deployed using an [Azure Resource Manager Template](https://azure.microsoft.com/resources/templates/201-api-management-logs-to-moesif-using-eventhub-webapp/). An XML Policy configures an APIM logger to send API logs to an Azure EventHub. An Azure WebJob reads from the EventHub and sends to Moesif for data processing.
+This solution is deployed using an [Azure Resource Manager Template](https://learn.microsoft.com/en-us/samples/azure/azure-quickstart-templates/api-management-logs-to-moesif-using-eventhub-webapp/). An XML Policy configures an APIM logger to send API logs to an Azure EventHub. An Azure WebJob reads from the EventHub and sends to Moesif for data processing.
 [More info on this integration](https://www.moesif.com/implementation/log-http-calls-from-azure-api-management?platform=azure-management).
 
 ![Architecture Diagram Logging API Calls from Azure API Management](images/azure-api-management-logging-architecture-diagram.png)
@@ -117,10 +117,11 @@ return new JObject(
         <forward-request follow-redirects="true" />
     </backend>
     <outbound>
-        <base />
+        <!-- Uncomment base element if policy added to a single API (i.e. not global) -->
+        <!-- <base /> -->
         <choose>
             <when condition="@(context.Variables.ContainsKey("sent-moesif-request") && !context.Variables.ContainsKey("sent-moesif-response"))">
-                <log-to-eventhub logger-id="moesif-log-to-event-hub" partition-id="1">@{
+                <log-to-eventhub logger-id="moesif-log-to-event-hub" partition-id="0">@{
 var body = context.Response.Body?.As<string>(true);
 var MAX_BODY_EH = 145000;
 var origBodyLen = (null != body) ? body.Length : 0;
@@ -145,7 +146,7 @@ return new JObject(
         <!-- <base /> -->
         <choose>
             <when condition="@(context.Variables.ContainsKey("sent-moesif-request") && !context.Variables.ContainsKey("sent-moesif-response"))">
-                <log-to-eventhub logger-id="moesif-log-to-event-hub" partition-id="1">@{
+                <log-to-eventhub logger-id="moesif-log-to-event-hub" partition-id="0">@{
 var body = context.Response.Body?.As<string>(true);
 var MAX_BODY_EH = 145000;
 var origBodyLen = (null != body) ? body.Length : 0;
@@ -203,9 +204,13 @@ Once created, the script will clone the [ApimEventProcessor repo 'v1' branch](ht
 
 ### APIM Logger
 
-If the name of an existing Azure API Management is not specified during deployment, you will need to add the `log-to-eventhub` logger to your Azure API Management service manually. To do so, utilize the [`nested/microsoft.apimanagement/service/loggers.json` ARM template](nested/microsoft.apimanagement/service/loggers.json) or view [Microsoft docs](https://docs.microsoft.com/azure/api-management/api-management-howto-log-event-hubs)
+If the name of an existing Azure API Management is not specified during deployment, you will need to add the `log-to-eventhub` logger to your Azure API Management service manually. To do so, utilize the [`nested/microsoft.apimanagement/service/loggers.bicep` ARM template](nested/microsoft.apimanagement/service/loggers.bicep) or view [Microsoft docs](https://docs.microsoft.com/azure/api-management/api-management-howto-log-event-hubs)
 
 More info on configuring Moesif is available on [Microsoft's documentation](https://docs.microsoft.com/azure/api-management/api-management-log-to-eventhub-sample).
+
+## Updating the integration
+
+To run the latest version of webjob, simply stop, and then restart the WebJob (Within the Azure Portal, go to your WebApp and select the WebJobs panel).
 
 ## Steps performed by the Azure Resource Template
 This template performs the following tasks
@@ -223,27 +228,5 @@ This template performs the following tasks
 - Ensure the `policy` is set on Api Management Apis
 - Ensure App Service configuration contains correct environment variables. View your App Service/Settings/Configuration/Application settings
 - Review the logs of App Service Webjob named `azure-api-mgmt-logs-2-moesif` and ensure it is running. View your App Service/Settings/WebJobs
-
-## Updating the integration
-
-If you need to update [Moesif/ApimEventProcessor](https://github.com/Moesif/Apimeventprocessor/tree/v1) and don't want to redeploy the entire template, you can follow these steps:
-
-Before starting, make sure you fork the repo [ApimEventProcessor](https://github.com/Moesif/Apimeventprocessor/tree/v1), so it's in your GitHub account.
-
-1. Log into your Azure Portal and navigate to the resource group holding your Moesif resources. 
-
-2. Select the WebApp and then click the Deployment Center panel on the left side.
-
-3. This will open the deployment panel as shown below, you'll want to click on GitHub.
-
-  ![Redeploy Webjob GitHub](https://docs.moesif.com/images/docs/integration/azure-api-management-redeploy-github.png)
-
-4. Click on _App Service build service_ (via Kudu) deployment
-
-  ![Redeploy Webjob Kudu](https://docs.moesif.com/images/docs/integration/azure-api-management-redeploy-kudu.png)
-
-5.  Select the repo you forked earlier and finish the walkthrough.
-
-Deployment may take a few minutes. Double check your XML policy if there are any changes.
 
 `Tags: Azure API Management, API Management, API Monetization, EventHub, Event Hub, API Gateway, Monitoring, Analytics, Observability, Logs, Logging, API Monitoring, API Analytics, API Logs, API Logging, Moesif, Kong, Tyk, Envoy, Gloo, Solo, Billing, Usage-based, usage-based, billing, WebApp, WebJob, App, Microsoft.Resources/deployments, Microsoft.ApiManagement/service/apis/policies, Microsoft.ApiManagement/service/loggers, Microsoft.EventHub/namespaces, Microsoft.EventHub/namespaces/eventhubs, Microsoft.EventHub/namespaces/eventhubs/authorizationRules, Microsoft.EventHub/namespaces/authorizationRules, Microsoft.Storage/storageAccounts, Microsoft.Web/sites/extensions, Microsoft.Web/serverfarms, Microsoft.Web/sites, SystemAssigned, Microsoft.Web/sites/config, Microsoft.Web/sites/hostNameBindings`
